@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Air Monitor Live</title>
+  <style>
+    body{font-family:system-ui,Arial;margin:24px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .card{border:1px solid #ddd;border-radius:12px;padding:12px;min-width:220px}
+    .big{font-size:28px;font-weight:700}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid #ddd}
+  </style>
+</head>
+<body>
+  <h1>Air Monitor (Live)</h1>
+  <div>Status: <span id="st" class="badge">connecting...</span></div>
+
+  <div class="row" style="margin-top:12px">
+    <div class="card"><div>Temperatura</div><div id="t" class="big">-</div></div>
+    <div class="card"><div>Umiditate</div><div id="h" class="big">-</div></div>
+    <div class="card"><div>MQ-135</div><div id="mq" class="big">-</div></div>
+    <div class="card"><div>Lumina</div><div id="light" class="big">-</div></div>
+    <div class="card"><div>Calitate</div><div id="good" class="big">-</div></div>
+  </div>
+
+  <script>
+    const st = document.getElementById('st');
+    const tEl = document.getElementById('t');
+    const hEl = document.getElementById('h');
+    const mqEl = document.getElementById('mq');
+    const lightEl = document.getElementById('light');
+    const goodEl = document.getElementById('good');
+
+    const es = new EventSource('/api/stream');
+    es.onopen = () => st.textContent = 'connected';
+    es.onerror = () => st.textContent = 'disconnected';
+
+    es.addEventListener('data', (ev) => {
+      const d = JSON.parse(ev.data);
+
+      tEl.textContent = d.t.toFixed(1) + ' °C';
+      hEl.textContent = Math.round(d.h) + ' %';
+      mqEl.textContent = d.mq;
+
+      lightEl.textContent = (d.light === 1) ? 'BRIGHT' : 'DARK';
+      goodEl.textContent = (d.good === 1) ? 'Calitate buna' : 'Calitate slaba';
+    });
+  </script>
+</body>
+</html>
